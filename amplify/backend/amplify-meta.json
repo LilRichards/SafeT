@@ -1,0 +1,53 @@
+{
+	"providers": {
+		"awscloudformation": {
+			"AuthRoleName": "afe-20190204190632-authRole",
+			"UnauthRoleArn": "arn:aws:iam::880770769427:role/afe-20190204190632-unauthRole",
+			"AuthRoleArn": "arn:aws:iam::880770769427:role/afe-20190204190632-authRole",
+			"Region": "us-east-1",
+			"DeploymentBucketName": "afe-20190204190632-deployment",
+			"UnauthRoleName": "afe-20190204190632-unauthRole",
+			"StackName": "afe-20190204190632",
+			"StackId": "arn:aws:cloudformation:us-east-1:880770769427:stack/afe-20190204190632/e48a6480-28d9-11e9-b40c-0a4c9dfbdd94"
+		}
+	},
+	"api": {
+		"safetui": {
+			"service": "AppSync",
+			"providerPlugin": "awscloudformation",
+			"output": {
+				"securityType": "API_KEY",
+				"GraphQLAPIIdOutput": "zp3z6kq6mzhutfv3sjqje3z5oi",
+				"GraphQLAPIEndpointOutput": "https://lydd2bkbbnd5tki7mlw5hbeaua.appsync-api.us-east-1.amazonaws.com/graphql",
+				"GraphQLAPIKeyOutput": "da2-7yxeghrzzjdnpfneajoys6rex4"
+			},
+			"providerMetadata": {
+				"s3TemplateURL": "https://s3.amazonaws.com/afe-20190204190632-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+				"logicalId": "apisafetui"
+			},
+			"lastPushTimeStamp": "2019-02-05T01:01:36.523Z",
+			"lastPushDirHash": "1kDvAegdByXBEBNQSLjk83hU2Dg="
+		}
+	},
+	"auth": {
+		"cognitof2dd4ddd": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"providerMetadata": {
+				"s3TemplateURL": "https://s3.amazonaws.com/afe-20190204190632-deployment/amplify-cfn-templates/auth/cognitof2dd4ddd-cloudformation-template.yml",
+				"logicalId": "authcognitof2dd4ddd"
+			},
+			"lastPushTimeStamp": "2019-02-05T01:01:36.523Z",
+			"output": {
+				"AppClientSecret": "3ec1stb5vtm0ir79904ut5c0clevf5fbota1el5ifvnd2dp68rf",
+				"UserPoolId": "us-east-1_3PUA0emyu",
+				"AppClientIDWeb": "70u8tj3nigpoo8rdvcd8uskpb9",
+				"AppClientID": "6imnlhvbb2rqiaa5kdv406828h",
+				"IdentityPoolId": "us-east-1:5be1bc28-4631-4126-b6b6-8f9ccfa9c82e",
+				"IdentityPoolName": "cognitof2dd4ddd_identitypool_f2dd4ddd",
+				"UserPoolName": "cognitof2dd4ddd_userpool_f2dd4ddd"
+			},
+			"lastPushDirHash": "jd0PLLTkrMBQq3Uzn6sp54/4wb0="
+		}
+	}
+}

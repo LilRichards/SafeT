@@ -1,0 +1,16 @@
+projects:
+  safetui:
+    schemaPath: app\src\main\graphql\schema.json
+    includes:
+      - app\src\main\graphql\**\*.graphql
+    excludes:
+      - ./amplify/**
+    extensions:
+      amplify:
+        codeGenTarget: ''
+        generatedFileName: ''
+        docsFilePath: app\src\main\graphql\com\amazonaws\amplify\generated\graphql
+        graphQLApiId: zp3z6kq6mzhutfv3sjqje3z5oi
+      endpoints:
+        prod: >-
+          https://lydd2bkbbnd5tki7mlw5hbeaua.appsync-api.us-east-1.amazonaws.com/graphql

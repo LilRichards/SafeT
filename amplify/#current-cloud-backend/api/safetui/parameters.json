@@ -1,0 +1,7 @@
+{
+    "AppSyncApiName": "safetui",
+    "schemaGraphql": "s3://afe-20190204190632-deployment/amplify-appsync-files/schema.graphql.1549328320313",
+    "ResolverBucket": "afe-20190204190632-deployment",
+    "ResolverRootKey": "amplify-appsync-files",
+    "DeploymentTimestamp": "1549328320313"
+}

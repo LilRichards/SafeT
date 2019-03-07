@@ -1,0 +1,16 @@
+{
+    "projectName": "SafeTUI",
+    "projectPath": "C:\\Users\\sharn\\AndroidStudioProjects\\SafeTUI",
+    "defaultEditor": "sublime",
+    "frontendHandler": {
+        "android": "C:\\Users\\sharn\\AppData\\Roaming\\npm\\node_modules\\@aws-amplify\\cli\\node_modules\\amplify-frontend-android"
+    },
+    "amplify-frontend-android": {
+        "config": {
+            "ResDir": "app/src/main/res"
+        }
+    },
+    "providers": {
+        "awscloudformation": "C:\\Users\\sharn\\AppData\\Roaming\\npm\\node_modules\\@aws-amplify\\cli\\node_modules\\amplify-provider-awscloudformation"
+    }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#474747</color>
+    <color name="colorPrimaryDark">#ffffff</color>
+    <color name="colorAccent">#dd893e</color>
+    <color name="background_material_light">#474747</color>
+    <color name="slpashBackground">#e47f24</color>
+    <color name="bug_background_color">#383838</color>
+</resources>
