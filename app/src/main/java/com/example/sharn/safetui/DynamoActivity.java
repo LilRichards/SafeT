@@ -97,7 +97,7 @@ public class DynamoActivity extends AppCompatActivity {
         //CognitoUser user = userPool.getCurrentUser();
         //CognitoUser user = userPool.getUser(userId);
 
-        newItem.setUserId(user_name);
+        newItem.setUserId("test2");
         newItem.setType("Car");
         newItem.setLatitude(40.917664);
         newItem.setLongitude(25.002569);

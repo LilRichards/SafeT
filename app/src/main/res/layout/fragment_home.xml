@@ -13,9 +13,7 @@
         android:id="@+id/map1"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="383dp"
-        android:layout_height="474dp"
-        android:layout_marginBottom="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="444dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -23,7 +21,7 @@
 
 
     <RadioGroup
-        android:id="@+id/radioGroup"
+        android:id="@+id/radioGroup1"
         android:layout_width="236dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
@@ -36,12 +34,12 @@
         app:layout_constraintTop_toBottomOf="@+id/map1">
 
         <RadioButton
-            android:id="@+id/radioButton"
+            android:id="@+id/radioButton1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/left_radio"
             android:baselineAligned="false"
-            android:text="Cyclist"
+            android:text="Driver"
             android:textColor="@android:color/black"
             android:textSize="12sp" />
 
@@ -52,17 +50,17 @@
             android:background="@android:color/white"
             android:baselineAligned="false"
             android:shape="rectangle"
-            android:text="Pedestrian"
+            android:text="Cyclist"
             android:textColor="@android:color/black"
             android:textSize="12sp" />
 
         <RadioButton
             android:id="@+id/radioButton3"
-            android:layout_width="77dp"
+            android:layout_width="98dp"
             android:layout_height="wrap_content"
             android:background="@drawable/right_radio"
             android:baselineAligned="false"
-            android:text="Driver"
+            android:text="Pedestian"
             android:textColor="@android:color/black"
             android:textSize="12sp" />
     </RadioGroup>
@@ -85,6 +83,7 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/radioGroup"
+        app:layout_constraintStart_toEndOf="@+id/radioGroup1"
         app:layout_constraintTop_toBottomOf="@+id/map1" />
+
 </android.support.constraint.ConstraintLayout>
