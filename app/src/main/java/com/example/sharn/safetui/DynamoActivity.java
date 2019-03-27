@@ -8,10 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.example.sharn.safetui.Test;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -22,8 +18,7 @@ import com.amazonaws.mobileconnectors.appsync.cache.normalized.sql.AppSyncSqlHel
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.*;
-
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
@@ -85,14 +80,8 @@ public class DynamoActivity extends AppCompatActivity {
 
 
         // Add code to instantiate a AmazonDynamoDBClient
-        //////////////////////////////// MODIFIED ////////////////////////////////////////////////////
         AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
 
-        ScanRequest scan1 = new ScanRequest().withTableName("safet-mobilehub-905430148-SafeT_Testing2");
-
-        ScanResult result = dynamoDBClient.scan(scan1); //this should pull the entire table down
-
-        /////////////////////////////////////////////////////////////////////////////////////////////
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
                 .awsConfiguration(configuration)
