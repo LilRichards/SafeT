@@ -8,6 +8,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.example.sharn.safetui.R;
 import com.example.sharn.safetui.Test;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -18,7 +24,8 @@ import com.amazonaws.mobileconnectors.appsync.cache.normalized.sql.AppSyncSqlHel
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.*;
+
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
@@ -41,12 +48,14 @@ import java.util.Map;
 public class DynamoActivity extends AppCompatActivity {
     // Declare a DynamoDBMapper object
     DynamoDBMapper dynamoDBMapper;
-/*
-    private TextView txtUser;
-    private TextView txtType;
-    private TextView txtLat;
-    private TextView txtLon;
-*/
+    static String tableName = "safet-mobilehub-905430148-SafeT_Testing2";
+
+    /*
+        private TextView txtUser;
+        private TextView txtType;
+        private TextView txtLat;
+        private TextView txtLon;
+    */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +63,7 @@ public class DynamoActivity extends AppCompatActivity {
 
         final Button button1 = findViewById(R.id.add_data_btn);
         final Button button2 = findViewById(R.id.load_btn);
+        final Button button3 = findViewById(R.id.button4);
 
         button1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -66,26 +76,34 @@ public class DynamoActivity extends AppCompatActivity {
                 readNews();
             }
         });
-/*
-        txtUser = findViewById(R.id.disp_user);
-        txtType = findViewById(R.id.disp_type);
-        txtLat = findViewById(R.id.disp_lat);
-        txtLon = findViewById(R.id.disp_lon);
-*/
+
         // AWSMobileClient enables AWS user credentials to access your table
         AWSMobileClient.getInstance().initialize(this).execute();
 
         AWSCredentialsProvider credentialsProvider = AWSMobileClient.getInstance().getCredentialsProvider();
         AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
 
-
-        // Add code to instantiate a AmazonDynamoDBClient
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
+        final AmazonDynamoDBAsyncClient dynamoDBClient = new AmazonDynamoDBAsyncClient(credentialsProvider);
 
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
                 .awsConfiguration(configuration)
                 .build();
+
+
+        button3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
+                        ScanResult result = dynamoDBClient.scan(scan1); //this should pull the entire tabledown
+                    }
+                };
+                Thread mythread = new Thread(runnable);
+                mythread.start();
+            }
+        });
+
     }
 
     public void createNews() {

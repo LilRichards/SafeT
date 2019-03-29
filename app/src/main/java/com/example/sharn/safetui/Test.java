@@ -6,7 +6,7 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBRangeKey
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 //1: has range key
 //2: no range key
-@DynamoDBTable(tableName = "safet-mobilehub-905430148-SafeT_Testing2")
+@DynamoDBTable(tableName = "SafeT_Table3")
 public class Test {
     private String _userId;
     private String _Type ;

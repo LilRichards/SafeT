@@ -28,13 +28,21 @@ import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+
 import static android.content.Context.LOCATION_SERVICE;
+
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
     GoogleMap map;
@@ -43,8 +51,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private LocationManager locationManager;
     private boolean permissionGiven = false;
     DynamoDBMapper dynamoDBMapper;
-    String type = "Inactive";
+    String type = "Car";
+    double lat = 0;
+    double lon = 0;
 
+    int count = 0;//for testing loops
 
     private RadioGroup radioGroup;
     private RadioButton radioButton;
@@ -73,8 +84,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             public void onLocationChanged(Location location) {
                 map.clear();
 
-                double lat = location.getLatitude();
-                double lon = location.getLongitude();
+                lat = location.getLatitude();
+                lon = location.getLongitude();
 
                 SaveLocation(lat, lon, type);
 
@@ -107,14 +118,61 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
 
         // Add code to instantiate a AmazonDynamoDBClient
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
+        final AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
 
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
                 .awsConfiguration(configuration)
                 .build();
 
+        if (type == "Car"){
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
+                    ScanResult result = dynamoDBClient.scan(scan1);
 
+                    for(Map<String, AttributeValue> item :result.getItems()){
+                        //String s = "";
+                        //for (Map.Entry<String, AttributeValue> entry : item.entrySet()) {
+                            /*s += " -- " + entry.getKey() + " = " + entry.getValue();
+                            for (String sSplit: s.split(" -- ",4)){
+                            }*/
+                            //attributes.get("project").getStringValue()
+
+                            //Get Lat
+                            Object oLat = item.get("Latitude").getN();
+                            String sLat = (String) oLat;
+                            double dLat = Double.parseDouble(sLat);
+
+                            //Get Lon
+                            Object oLon = item.get("Longitude").getN();
+                            String sLon = (String) oLon;
+                            double dLon = Double.parseDouble(sLon);
+
+                            //Get ID
+                            Object oId = item.get("userId").getS();
+                            String sId = (String) oId;
+                            //double dId = Double.parseDouble(sLon);
+
+                            //Get Type
+                            Object oType = item.get("Type").getS();
+                            String sType = (String) oType;
+
+                            //Collision Checks
+                            /*if (dLat == lat){//lat
+                                count++;
+                            }*/
+                        //}
+                    }
+
+                    /*for (int i = 0; i < result.getCount(); i++){
+                        count++;
+                    }*/
+                }
+            };
+            Thread mythread = new Thread(runnable);
+            mythread.start();
+        }
 
         ////////////////Toggle Button
         safeTButton = getView().findViewById(R.id.toggleButton2);
@@ -123,7 +181,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 if (safeTButton.isChecked()) {
                     checkPermission();
                     if (permissionGiven == true) {
-                        locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
+                        //locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
+                        SaveLocation(38.0, -77.0, "Car");
                     }
                 } else {
                     locationManager.removeUpdates(locationListener);
@@ -133,23 +192,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
-
-
         ////////////////Radio Button
-        //  make radio button select type when toggle on
-        //when toggle off: radio clear
-        //if radio != checked: cant turn on toggle
-            //Toast: select a type
-
-
-
-
-
-
-
-
-
-
     }
 
 
