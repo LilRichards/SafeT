@@ -1,11 +1,18 @@
 package com.example.sharn.safetui;
 
 import android.content.Intent;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Trilateration extends AppCompatActivity {
 
@@ -25,11 +32,121 @@ public class Trilateration extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 main(new String []{"arg1", "arg2", "arg3"});
+
             }
         });
     }
 
     public void main(String[] args) {
+        WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        List<ScanResult> scan = wifi.getScanResults();
+        wifi.startScan();
+
+        double first, second, third;
+        first = second = third = Double.MAX_VALUE;
+
+        RouterInfo r1_2 = new RouterInfo("SafeT_WIFI1", 0, 0, 0);
+        RouterInfo r1_5 = new RouterInfo("SafeT_WIFI1-5G", 0, 0, 0);
+
+        RouterInfo r2_2 = new RouterInfo("SafeT_WIFI2", 0, 0, 0);
+        RouterInfo r2_5 = new RouterInfo("SafeT_WIFI2-5G", 0, 0, 0);
+
+        RouterInfo r3_2 = new RouterInfo("SafeT_WIFI3", 0, 0, 0);
+        RouterInfo r3_5 = new RouterInfo("SafeTWIFI3-5G", 0, 0, 0);
+
+        RouterInfo r4_2 = new RouterInfo("SafeT_WIFI4", 0, 0, 0);
+        RouterInfo r4_5 = new RouterInfo("SafeT_WIFI4-5g", 0, 0, 0);
+
+        RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0);
+        RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0);
+
+        ArrayList<RouterInfo> list = new ArrayList<>();
+        RouterInfo [] close = new RouterInfo[3];
+        double distance = 0;
+        for (ScanResult r : scan) {
+            if (r.SSID.equals(r1_2.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r1_2.freq = r.frequency;
+                r1_2.rssi = r.level;
+                r1_2.distance = distance;
+            }
+            if (r.SSID.equals(r1_5.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r1_5.freq = r.frequency;
+                r1_5.rssi = r.level;
+                r1_5.distance = distance;
+            }
+            if (r.SSID.equals(r2_2.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r2_2.freq = r.frequency;
+                r2_2.rssi = r.level;
+                r2_2.distance = distance;
+            }
+            if (r.SSID.equals(r2_5.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r2_5.freq = r.frequency;
+                r2_5.rssi = r.level;
+                r2_5.distance = distance;
+            }
+            if (r.SSID.equals(r3_2.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r3_2.freq = r.frequency;
+                r3_2.rssi = r.level;
+                r3_2.distance = distance;
+            }
+            if (r.SSID.equals(r3_5.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r3_5.freq = r.frequency;
+                r3_5.rssi = r.level;
+                r3_5.distance = distance;
+            }
+            if (r.SSID.equals(r4_2.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r4_2.freq = r.frequency;
+                r4_2.rssi = r.level;
+                r4_2.distance = distance;
+            }
+            if (r.SSID.equals(r4_5.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r4_5.freq = r.frequency;
+                r4_5.rssi = r.level;
+                r4_5.distance = distance;
+            }
+            if (r.SSID.equals(r5_2.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r5_2.freq = r.frequency;
+                r5_2.rssi = r.level;
+                r5_2.distance = distance;
+            }
+            if (r.SSID.equals(r5_5.getName())) {
+                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                r5_5.freq = r.frequency;
+                r5_5.rssi = r.level;
+                r5_5.distance = distance;
+            }
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getDistance() < first) {
+                third = second;
+                second = first;
+                first = list.get(i).getDistance();
+            } else if (list.get(i).getDistance() < second) {
+                third = second;
+                second = list.get(i).getDistance();
+            } else if (list.get(i).getDistance() < third) {
+                third = list.get(i).getDistance();
+            }
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getDistance() == first) {
+                close[0]  = list.get(i);
+            }
+        }
+
+
+
 //assuming elevation = 0
         double earthR = 6371;
         double LatA = 38.831723;
