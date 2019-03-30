@@ -37,12 +37,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.lang.reflect.Type;
 import java.util.Map;
-
 import static android.content.Context.LOCATION_SERVICE;
-
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
     GoogleMap map;
@@ -57,8 +54,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     int count = 0;//for testing loops
 
-    private RadioGroup radioGroup;
-    private RadioButton radioButton;
+    //private RadioGroup radioGroup;
+    //private RadioButton radioButton;
 
     public HomeFragment() {
     }
@@ -80,7 +77,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         locationListener = new LocationListener() {
             @Override
             ////////Update Location
-                //upload pos & type to db
             public void onLocationChanged(Location location) {
                 map.clear();
 
@@ -121,53 +117,41 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         final AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
 
         this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(configuration)
-                .build();
+            .dynamoDBClient(dynamoDBClient)
+            .awsConfiguration(configuration)
+            .build();
 
         if (type == "Car"){
             Runnable runnable = new Runnable() {
                 public void run() {
-                    ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
-                    ScanResult result = dynamoDBClient.scan(scan1);
+                ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
+                ScanResult result = dynamoDBClient.scan(scan1);
 
-                    for(Map<String, AttributeValue> item :result.getItems()){
-                        //String s = "";
-                        //for (Map.Entry<String, AttributeValue> entry : item.entrySet()) {
-                            /*s += " -- " + entry.getKey() + " = " + entry.getValue();
-                            for (String sSplit: s.split(" -- ",4)){
-                            }*/
-                            //attributes.get("project").getStringValue()
+                for(Map<String, AttributeValue> item :result.getItems()){
+                    //Get Lat
+                    Object oLat = item.get("Latitude").getN();
+                    String sLat = (String) oLat;
+                    double dLat = Double.parseDouble(sLat);
 
-                            //Get Lat
-                            Object oLat = item.get("Latitude").getN();
-                            String sLat = (String) oLat;
-                            double dLat = Double.parseDouble(sLat);
+                    //Get Lon
+                    Object oLon = item.get("Longitude").getN();
+                    String sLon = (String) oLon;
+                    double dLon = Double.parseDouble(sLon);
 
-                            //Get Lon
-                            Object oLon = item.get("Longitude").getN();
-                            String sLon = (String) oLon;
-                            double dLon = Double.parseDouble(sLon);
+                    //Get ID
+                    Object oId = item.get("userId").getS();
+                    String sId = (String) oId;
+                    //double dId = Double.parseDouble(sLon);
 
-                            //Get ID
-                            Object oId = item.get("userId").getS();
-                            String sId = (String) oId;
-                            //double dId = Double.parseDouble(sLon);
+                    //Get Type
+                    Object oType = item.get("Type").getS();
+                    String sType = (String) oType;
 
-                            //Get Type
-                            Object oType = item.get("Type").getS();
-                            String sType = (String) oType;
-
-                            //Collision Checks
-                            /*if (dLat == lat){//lat
-                                count++;
-                            }*/
-                        //}
-                    }
-
-                    /*for (int i = 0; i < result.getCount(); i++){
+                    //Collision Checks
+                    if (dLat == lat){//lat
                         count++;
-                    }*/
+                    }
+                }
                 }
             };
             Thread mythread = new Thread(runnable);
@@ -178,18 +162,18 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         safeTButton = getView().findViewById(R.id.toggleButton2);
         safeTButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (safeTButton.isChecked()) {
-                    checkPermission();
-                    if (permissionGiven == true) {
-                        //locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
-                        SaveLocation(38.0, -77.0, "Car");
-                    }
-                } else {
-                    locationManager.removeUpdates(locationListener);
-                    SaveLocation(0.0, 0.0, "Inactive");
-                    map.clear();
-
+            if (safeTButton.isChecked()) {
+                checkPermission();
+                if (permissionGiven == true) {
+                    //locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
+                    SaveLocation(38.0, -77.0, "Car");
                 }
+            } else {
+                locationManager.removeUpdates(locationListener);
+                SaveLocation(0.0, 0.0, "Inactive");
+                map.clear();
+
+            }
             }
         });
         ////////////////Radio Button
@@ -210,13 +194,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED && getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED && getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.INTERNET},
-                        10);
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.INTERNET},
+                10);
                 checkPermission();
             } else {
                 permissionGiven = true;
@@ -250,8 +234,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                dynamoDBMapper.save(newItem);
-                // Item saved
+            dynamoDBMapper.save(newItem);
             }
         }).start();
     }
