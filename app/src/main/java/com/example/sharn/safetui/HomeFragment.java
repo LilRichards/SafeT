@@ -1,6 +1,8 @@
 package com.example.sharn.safetui;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,17 +12,11 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.Location;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -37,7 +33,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import java.lang.reflect.Type;
 import java.util.Map;
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -48,14 +43,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private LocationManager locationManager;
     private boolean permissionGiven = false;
     DynamoDBMapper dynamoDBMapper;
+
     String type = "Car";
     double lat = 0;
     double lon = 0;
-
-    int count = 0;//for testing loops
-
-    //private RadioGroup radioGroup;
-    //private RadioButton radioButton;
+    int count = 0;//for loop testing
 
     public HomeFragment() {
     }
@@ -73,18 +65,23 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map1);
         mapFragment.getMapAsync(this);
 
+        //Get username
+        CognitoUserPool userPool = new CognitoUserPool(this.getContext(),
+                "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
+                "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
+        final String user_name = userPool.getCurrentUser().getUserId();
+
+        //Location
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
+            //Update Location in DB
             @Override
-            ////////Update Location
             public void onLocationChanged(Location location) {
-                map.clear();
-
                 lat = location.getLatitude();
                 lon = location.getLongitude();
+                SaveLocation(lat, lon, type, user_name);
 
-                SaveLocation(lat, lon, type);
-
+                map.clear();
                 LatLng current = new LatLng(lat, lon);
                 MarkerOptions option = new MarkerOptions();
                 option.position(current);
@@ -109,84 +106,85 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         // AWSMobileClient enables AWS user credentials to access your table
         AWSMobileClient.getInstance().initialize(this.getContext()).execute();
-
         AWSCredentialsProvider credentialsProvider = AWSMobileClient.getInstance().getCredentialsProvider();
         AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
-
         // Add code to instantiate a AmazonDynamoDBClient
         final AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
-
+        //Create DB Mapper
         this.dynamoDBMapper = DynamoDBMapper.builder()
             .dynamoDBClient(dynamoDBClient)
             .awsConfiguration(configuration)
             .build();
 
+        //Collision Checking from Cars
         if (type == "Car"){
             Runnable runnable = new Runnable() {
                 public void run() {
-                ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
-                ScanResult result = dynamoDBClient.scan(scan1);
+                    ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
+                    ScanResult result = dynamoDBClient.scan(scan1);
 
-                for(Map<String, AttributeValue> item :result.getItems()){
-                    //Get Lat
-                    Object oLat = item.get("Latitude").getN();
-                    String sLat = (String) oLat;
-                    double dLat = Double.parseDouble(sLat);
+                    for(Map<String, AttributeValue> item :result.getItems()){
+                        //Get Lat
+                        Object oLat = item.get("Latitude").getN();
+                        String sLat = (String) oLat;
+                        double dLat = Double.parseDouble(sLat);
 
-                    //Get Lon
-                    Object oLon = item.get("Longitude").getN();
-                    String sLon = (String) oLon;
-                    double dLon = Double.parseDouble(sLon);
+                        //Get Lon
+                        Object oLon = item.get("Longitude").getN();
+                        String sLon = (String) oLon;
+                        double dLon = Double.parseDouble(sLon);
 
-                    //Get ID
-                    Object oId = item.get("userId").getS();
-                    String sId = (String) oId;
-                    //double dId = Double.parseDouble(sLon);
+                        //Get ID
+                        Object oId = item.get("userId").getS();
+                        String sId = (String) oId;
 
-                    //Get Type
-                    Object oType = item.get("Type").getS();
-                    String sType = (String) oType;
+                        //Get Type
+                        Object oType = item.get("Type").getS();
+                        String sType = (String) oType;
 
-                    //Collision Checks
-                    if (dLat == lat){//lat
-                        count++;
+                        //Collision Checks
+                        if (!sId.equals(user_name)){
+                            if (sType.equals("Ped") || sType.equals("Bike")) {
+                                if (dLat >= lat - 1 && dLat <= lat + 1) {
+                                    if (dLon >= lon - 1 && dLon <= lon + 1) {
+                                        count++;
+                                        //AlertDialogPop();
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
                 }
             };
             Thread mythread = new Thread(runnable);
             mythread.start();
         }
 
-        ////////////////Toggle Button
+        //Toggle Button
         safeTButton = getView().findViewById(R.id.toggleButton2);
         safeTButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             if (safeTButton.isChecked()) {
                 checkPermission();
+                //Active
                 if (permissionGiven == true) {
                     //locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
-                    SaveLocation(38.0, -77.0, "Car");
+                    SaveLocation(lat, lon, "Car", user_name);
                 }
+                //Inactive
             } else {
                 locationManager.removeUpdates(locationListener);
-                SaveLocation(0.0, 0.0, "Inactive");
+                SaveLocation(0.0, 0.0, "Inactive", user_name);
                 map.clear();
-
-            }
+                }
             }
         });
-        ////////////////Radio Button
-    }
-
+    }//End OnCreate
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         LatLng me = new LatLng(38.781395, -77.523965);
-        //MarkerOptions option = new MarkerOptions();
-        //option.position(me).title("Manass");
-        //map.addMarker(option);
         map.moveCamera(CameraUpdateFactory.newLatLng(me));
         map.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
     }
@@ -218,15 +216,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-////////////////////save to db
-    public void SaveLocation(Double lat, Double lon, String typeIn) {
-        final Test newItem = new Test();     ///////getClass().HomeFragment
-        CognitoUserPool userPool = new CognitoUserPool(this.getContext(),
-                "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
-                "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
-        String user_name = userPool.getCurrentUser().getUserId();
-
-        newItem.setUserId(user_name);
+    public void SaveLocation(Double lat, Double lon, String typeIn, String userName) {
+        final Test newItem = new Test();
+        newItem.setUserId(userName);
         newItem.setType(typeIn);
         newItem.setLatitude(lat);
         newItem.setLongitude(lon);
@@ -238,4 +230,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
         }).start();
     }
+
+    /*public void AlertDialogPop(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this.getContext()).create();
+        alertDialog.setTitle("Alert");
+        alertDialog.setMessage("Alert message to be shown");
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+        }*/
 }

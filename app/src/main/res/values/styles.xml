@@ -23,4 +23,14 @@
         <item name="android:colorBackground">@color/background_material_light</item>
     </style>
 
+
+    <style name="AlertDialogCustom" parent="@android:style/Theme.Dialog">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:headerDividersEnabled">true</item>
+        <item name="android:typeface">normal</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:buttonStyle">@color/colorWhite</item>
+    </style>
+
 </resources>
