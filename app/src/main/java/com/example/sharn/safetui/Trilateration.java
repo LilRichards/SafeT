@@ -9,6 +9,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.config.AWSConfiguration;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,9 +23,12 @@ import java.util.Map;
 
 public class Trilateration extends AppCompatActivity {
 
-
+    DynamoDBMapper dynamoDBMapper;
     private TextView txtWifiInfo;
     private Button button;
+    String type = "Ped";
+    Double lat = 80085.0;
+    Double lon = 80085.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,14 +37,35 @@ public class Trilateration extends AppCompatActivity {
 
         txtWifiInfo = findViewById(R.id.idTxt);
 
+        //Get username
+        CognitoUserPool userPool = new CognitoUserPool(this,
+                "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
+                "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
+        final String user_name = userPool.getCurrentUser().getUserId();
+
         button = findViewById(R.id.button3);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 main(new String []{"arg1", "arg2", "arg3"});
-
+                SaveLocation(lat, lon, type, user_name);
             }
         });
+
+        // AWSMobileClient enables AWS user credentials to access your table
+        AWSMobileClient.getInstance().initialize(this).execute();
+
+        AWSCredentialsProvider credentialsProvider = AWSMobileClient.getInstance().getCredentialsProvider();
+        AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
+
+        final AmazonDynamoDBAsyncClient dynamoDBClient = new AmazonDynamoDBAsyncClient(credentialsProvider);
+
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(configuration)
+                .build();
+
+
     }
 
     public void main(String[] args) {
@@ -228,8 +259,16 @@ public class Trilateration extends AppCompatActivity {
                 P1[2] + x*ex[2] + y*ey[2] + z*ez[2]};
         //convert back to lat/long from ECEF
         //convert to degrees
-        double lat = Math.toDegrees(Math.asin(triPt[2] / earthR));
-        double lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
+        lat = Math.toDegrees(Math.asin(triPt[2] / earthR));
+        lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
+
+        if (lat.isNaN()){
+            lat = 555.5;
+        }
+
+        if (lon.isNaN()){
+            lon = 555.5;
+        }
 
         String s = "Lat: " + lat + "\n" + "Lon: " + lon;
         //txtWifiInfo.append(s);
@@ -257,5 +296,21 @@ public class Trilateration extends AppCompatActivity {
     public static double norm (double[] a)
     {
         return Math.sqrt((a[0]*a[0])+(a[1]*a[1])+(a[2]*a[2]));
+    }
+
+
+    public void SaveLocation(Double lat, Double lon, String typeIn, String userName) {
+        final Test newItem = new Test();
+        newItem.setUserId(userName);
+        newItem.setType(typeIn);
+        newItem.setLatitude(lat);
+        newItem.setLongitude(lon);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dynamoDBMapper.save(newItem);
+            }
+        }).start();
     }
 }

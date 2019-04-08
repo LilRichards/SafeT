@@ -10,8 +10,9 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 public class Test {
     private String _userId;
     private String _Type ;
-    private Double _Latitude;
-    private Double _Longitude;
+    private double _Latitude;
+    private double _Longitude;
+    private long   _TimeStamp;
 
     @DynamoDBHashKey(attributeName = "userId")
     @DynamoDBAttribute(attributeName = "userId")
@@ -34,21 +35,28 @@ public class Test {
     }
 
     @DynamoDBAttribute(attributeName = "Latitude")
-    public Double getLatitude() {
+    public double getLatitude() {
         return _Latitude;
     }
-
-    public void setLatitude(final Double _Latitude) {
+    public void setLatitude(final double _Latitude) {
         this._Latitude = _Latitude;
     }
 
     @DynamoDBAttribute(attributeName = "Longitude")
-    public Double getLongitude() {
+    public double getLongitude() {
         return _Longitude;
     }
-
-    public void setLongitude(final Double _Longitude) {
+    public void setLongitude(final double _Longitude) {
         this._Longitude = _Longitude;
     }
+
+    @DynamoDBAttribute(attributeName = "TimeStamp")
+    public long getTimeStamp() {
+        return _TimeStamp;
+    }
+    public void setTimeStamp(final long _TimeStamp) {
+        this._TimeStamp = _TimeStamp;
+    }
+
 
 }
