@@ -34,6 +34,9 @@ public class Trilateration extends AppCompatActivity {
     String type = "Testing";
     Double lat = 80085.0;
     Double lon = 80085.0;
+    double rssi_1m_2g = -39;
+    double rssi_1m_5g = -31;
+    double ratio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,11 +124,6 @@ public class Trilateration extends AppCompatActivity {
         Home_3.longitude = -77.523577;
        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
         /**
          * Use WiFi Manager to scan the area for all access points.
          * Filter by "our" routers and add the information to the router instances
@@ -206,16 +204,18 @@ public class Trilateration extends AppCompatActivity {
                 list.add(r5_5);
             }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (r.SSID.equals(Home_1.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio = (double) r.level/ rssi_1m_2g;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_1.freq = r.frequency;
                 Home_1.rssi = r.level;
                 Home_1.distance = distance;
                 list.add(Home_1);
             }
             if (r.SSID.equals(Home_2.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio =(double)  r.level/rssi_1m_2g;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_2.freq = r.frequency;
                 Home_2.rssi = r.level;
                 Home_2.distance = distance;
@@ -223,7 +223,8 @@ public class Trilateration extends AppCompatActivity {
 
             }
             if (r.SSID.equals(Home_3.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio =(double)  r.level/rssi_1m_2g;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_3.freq = r.frequency;
                 Home_3.rssi = r.level;
                 Home_3.distance = distance;
@@ -254,15 +255,12 @@ public class Trilateration extends AppCompatActivity {
 //assuming elevation = 0
 
         double earthR = 6371;
-
         double LatA = first.getLatitude();
         double LonA = first.getLongitude();
-        double DistA = first.getDistance()/100000000;
-
+        double DistA = first.getDistance();
         double LatB = second.getLatitude();
         double LonB = second.getLongitude();
-        double DistB = second.getDistance()/1000;
-
+        double DistB = second.getDistance();
         double LatC = third.getLatitude();
         double LonC = third.getLongitude();
         double DistC = third.getDistance();
@@ -270,18 +268,15 @@ public class Trilateration extends AppCompatActivity {
         /*
         //assuming elevation = 0
         double earthR = 6371;
-
         double LatA = 38.8275333;
         double LonA = -77.305220;
-        double DistA = .003;
-
+        double DistA = .0030;
         double LatB = 38.827533;
         double LonB = -77.305105;
-        double DistB = .004;
-
+        double DistB = .0040;
         double LatC = 38.827566;
         double LonC = -77.305177;
-        double DistC = 0.005;
+        double DistC = 0.0050;
 
   /*
     using authalic sphere
