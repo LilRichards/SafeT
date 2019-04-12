@@ -21,12 +21,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.lang.Math.*;
+import java.util.*;
+
+import static java.lang.Math.asin;
+
 public class Trilateration extends AppCompatActivity {
 
     DynamoDBMapper dynamoDBMapper;
     private TextView txtWifiInfo;
     private Button button;
-    String type = "Ped";
+    String type = "Testing";
     Double lat = 80085.0;
     Double lon = 80085.0;
 
@@ -102,6 +107,24 @@ public class Trilateration extends AppCompatActivity {
         RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0);
         RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0);
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0);
+        RouterInfo Home_2 = new RouterInfo("RDT", 0, 0, 0);
+        RouterInfo Home_3 = new RouterInfo("Te'Quaya", 0, 0, 0);
+        Home_1.latitude = 38.782220;
+        Home_1.longitude = -77.523569;
+
+        Home_2.latitude = 38.782154;
+        Home_2.longitude = -77.523373;
+
+        Home_3.latitude = 38.782048;
+        Home_3.longitude = -77.523577;
+       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
         /**
          * Use WiFi Manager to scan the area for all access points.
@@ -124,6 +147,7 @@ public class Trilateration extends AppCompatActivity {
                 r1_5.freq = r.frequency;
                 r1_5.rssi = r.level;
                 r1_5.distance = distance;
+                list.add(r1_5);
             }
             if (r.SSID.equals(r2_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
@@ -137,6 +161,7 @@ public class Trilateration extends AppCompatActivity {
                 r2_5.freq = r.frequency;
                 r2_5.rssi = r.level;
                 r2_5.distance = distance;
+                list.add(r2_5);
             }
             if (r.SSID.equals(r3_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
@@ -150,6 +175,7 @@ public class Trilateration extends AppCompatActivity {
                 r3_5.freq = r.frequency;
                 r3_5.rssi = r.level;
                 r3_5.distance = distance;
+                list.add(r3_5);
             }
             if (r.SSID.equals(r4_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
@@ -163,6 +189,7 @@ public class Trilateration extends AppCompatActivity {
                 r4_5.freq = r.frequency;
                 r4_5.rssi = r.level;
                 r4_5.distance = distance;
+                list.add(r4_5);
             }
             if (r.SSID.equals(r5_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
@@ -176,7 +203,34 @@ public class Trilateration extends AppCompatActivity {
                 r5_5.freq = r.frequency;
                 r5_5.rssi = r.level;
                 r5_5.distance = distance;
+                list.add(r5_5);
             }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            if (r.SSID.equals(Home_1.getName())) {
+                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                Home_1.freq = r.frequency;
+                Home_1.rssi = r.level;
+                Home_1.distance = distance;
+                list.add(Home_1);
+            }
+            if (r.SSID.equals(Home_2.getName())) {
+                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                Home_2.freq = r.frequency;
+                Home_2.rssi = r.level;
+                Home_2.distance = distance;
+                list.add(Home_2);
+
+            }
+            if (r.SSID.equals(Home_3.getName())) {
+                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                Home_3.freq = r.frequency;
+                Home_3.rssi = r.level;
+                Home_3.distance = distance;
+                list.add(Home_3);
+
+            }
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
 
@@ -198,18 +252,38 @@ public class Trilateration extends AppCompatActivity {
 
 
 //assuming elevation = 0
+
         double earthR = 6371;
+
         double LatA = first.getLatitude();
         double LonA = first.getLongitude();
-        double DistA = first.getDistance()/1000;
+        double DistA = first.getDistance()/100000000;
+
         double LatB = second.getLatitude();
         double LonB = second.getLongitude();
         double DistB = second.getDistance()/1000;
+
         double LatC = third.getLatitude();
         double LonC = third.getLongitude();
         double DistC = third.getDistance();
 
-    /*
+        /*
+        //assuming elevation = 0
+        double earthR = 6371;
+
+        double LatA = 38.8275333;
+        double LonA = -77.305220;
+        double DistA = .003;
+
+        double LatB = 38.827533;
+        double LonB = -77.305105;
+        double DistB = .004;
+
+        double LatC = 38.827566;
+        double LonC = -77.305177;
+        double DistC = 0.005;
+
+  /*
     using authalic sphere
     if using an ellipsoid this step is slightly different
     Convert geodetic Lat/Long to ECEF xyz
@@ -252,28 +326,26 @@ public class Trilateration extends AppCompatActivity {
         double x = ((DistA*DistA) - (DistB*DistB) + ((d*d)/(2*d)));
         double y = (((DistA*DistA) - (DistC*DistC) + (i*i) + (j*j))/(2*j)) - ((i/j)*x);
         //only one case shown here
-        double z = Math.sqrt((DistA*DistA) - (x*x) - (y*y));
+        double z = (DistA*DistA) - (x*x) - (y*y);
+        if (z < 0 ) {
+            z = Math.sqrt(Math.abs(z));
+        }
+        else {
+            z = Math.sqrt(z);
+        }
         //triPt is an array with ECEF x,y,z of trilateration point
         double triPt[] = {P1[0] + x*ex[0] + y*ey[0] + z*ez[0],
                 P1[1] + x*ex[1] + y*ey[1] + z*ez[1],
                 P1[2] + x*ex[2] + y*ey[2] + z*ez[2]};
         //convert back to lat/long from ECEF
         //convert to degrees
-        lat = Math.toDegrees(Math.asin(triPt[2] / earthR));
-        lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
-
-        if (lat.isNaN()){
-            lat = 555.5;
-        }
-
-        if (lon.isNaN()){
-            lon = 555.5;
-        }
+        double lat = Math.toDegrees(asin(triPt[2] / earthR));
+        double lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
+        //System.out.println(lat + " \n" + lon);
 
         String s = "Lat: " + lat + "\n" + "Lon: " + lon;
         //txtWifiInfo.append(s);
         txtWifiInfo.setText(s);
-
     }
     public static double dotProduct (double[] a, double[] b)
     {
@@ -297,7 +369,6 @@ public class Trilateration extends AppCompatActivity {
     {
         return Math.sqrt((a[0]*a[0])+(a[1]*a[1])+(a[2]*a[2]));
     }
-
 
     public void SaveLocation(Double lat, Double lon, String typeIn, String userName) {
         final Test newItem = new Test();
