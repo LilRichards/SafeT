@@ -13,13 +13,13 @@ public class Test {
     private double _Latitude;
     private double _Longitude;
     private long   _TimeStamp;
+    private String _Emergency;
 
     @DynamoDBHashKey(attributeName = "userId")
     @DynamoDBAttribute(attributeName = "userId")
     public String getUserId() {
         return _userId;
     }
-
     public void setUserId(final String _userId) {
         this._userId = _userId;
     }
@@ -29,11 +29,11 @@ public class Test {
     public String getType() {
         return _Type;
     }
-
     public void setType(final String _Type) {
         this._Type = _Type;
     }
 
+    //Latitude
     @DynamoDBAttribute(attributeName = "Latitude")
     public double getLatitude() {
         return _Latitude;
@@ -42,6 +42,7 @@ public class Test {
         this._Latitude = _Latitude;
     }
 
+    //Longitude
     @DynamoDBAttribute(attributeName = "Longitude")
     public double getLongitude() {
         return _Longitude;
@@ -50,6 +51,7 @@ public class Test {
         this._Longitude = _Longitude;
     }
 
+    //Timestamp
     @DynamoDBAttribute(attributeName = "TimeStamp")
     public long getTimeStamp() {
         return _TimeStamp;
@@ -58,5 +60,12 @@ public class Test {
         this._TimeStamp = _TimeStamp;
     }
 
-
+    //Emergency
+    @DynamoDBAttribute(attributeName = "Emergency")
+    public String getEmergency() {
+        return _Emergency;
+    }
+    public void setEmergency(final String _Emergency) {
+        this._Emergency = _Emergency;
+    }
 }

@@ -80,6 +80,7 @@ public class Trilateration extends AppCompatActivity {
 
         /*Create router instances for both the 2.4G and 5G bands.
         Currently only have 5 routers so 5 router instances*/
+        /*
         RouterInfo r1_2 = new RouterInfo("SafeT_WIFI1", 0, 0, 0,0);
         RouterInfo r1_5 = new RouterInfo("SafeT_WIFI1-5G", 0, 0, 0,0);
         r1_2.setLatitude(38.8275233);
@@ -109,29 +110,27 @@ public class Trilateration extends AppCompatActivity {
 
 
 
-
-
-/*
-
         RouterInfo r4_2 = new RouterInfo("SafeT_WIFI4", 0, 0, 0,0);
         RouterInfo r4_5 = new RouterInfo("SafeT_WIFI4-5g", 0, 0, 0,0);
 
 
         RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0,0);
         RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0,0);
+        */
 
+        RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0,0);
+        Home_1.setLatitude(38.782188);
+        Home_1.setLongitude(-77.523479);
+        Home_1.unitrssi = -31;///// 5G?????
+        RouterInfo Home_2 = new RouterInfo("SafeT_WIFI2", 0, 0, 0,0);
+        Home_2.setLatitude(38.782222);
+        Home_2.setLongitude(-77.523524);
+        Home_2.unitrssi = -38;
+        RouterInfo Home_3 = new RouterInfo("SafeT_WIFI3", 0, 0, 0,0);
+        Home_3.setLatitude(38.782237);
+        Home_3.setLongitude(-77.5236030);
+        Home_3.unitrssi = -37.9;
 
-        /*RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0);
-        RouterInfo Home_2 = new RouterInfo("RDT", 0, 0, 0);
-        RouterInfo Home_3 = new RouterInfo("Te'Quaya", 0, 0, 0);
-        Home_1.latitude = 38.782220;
-        Home_1.longitude = -77.523569;
-
-        Home_2.latitude = 38.782154;
-        Home_2.longitude = -77.523373;
-
-        Home_3.latitude = 38.782048;
-        Home_3.longitude = -77.523577;*/
 
         /*Use WiFi Manager to scan the area for all access points.
         Filter by "our" routers and add the information to the router instances
@@ -140,6 +139,7 @@ public class Trilateration extends AppCompatActivity {
         RouterInfo [] close = new RouterInfo[3];
         double distance = 0;
         for (ScanResult r : scan) {
+            /*
             if (r.SSID.equals(r1_2.getName())) {
                 ratio = (double) r.level/r1_2.unitrssi;
                 distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
@@ -147,7 +147,7 @@ public class Trilateration extends AppCompatActivity {
                 r1_2.rssi = r.level;
                 r1_2.distance = distance;
                 list.add(r1_2);
-            }/*
+            }
             if (r.SSID.equals(r1_5.getName())) {
                 ratio = (double) r.level/r1_5.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
@@ -156,14 +156,14 @@ public class Trilateration extends AppCompatActivity {
                 r1_5.distance = distance;
                 list.add(r1_5);
             }
-           */if (r.SSID.equals(r2_2.getName())) {
+           if (r.SSID.equals(r2_2.getName())) {
                 ratio = (double) r.level/r2_2.unitrssi;
                 distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 r2_2.freq = r.frequency;
                 r2_2.rssi = r.level;
                 r2_2.distance = distance;
                 list.add(r2_2);
-            }/*
+            }
             if (r.SSID.equals(r2_5.getName())) {
                 ratio = (double) r.level/r2_5.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
@@ -172,14 +172,14 @@ public class Trilateration extends AppCompatActivity {
                 r2_5.distance = distance;
                 list.add(r2_5);
             }
-          */ if (r.SSID.equals(r3_2.getName())) {
+             if (r.SSID.equals(r3_2.getName())) {
                 ratio = (double) r.level/r3_2.unitrssi;
                 distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 r3_2.freq = r.frequency;
                 r3_2.rssi = r.level;
                 r3_2.distance = distance;
                 list.add(r3_2);
-            }/*
+            }
             if (r.SSID.equals(r3_5.getName())) {
                 ratio = (double) r.level/r3_5.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
@@ -187,12 +187,7 @@ public class Trilateration extends AppCompatActivity {
                 r3_5.rssi = r.level;
                 r3_5.distance = distance;
                 list.add(r3_5);
-            }*/
-
-
-
-
-/*
+            }
             if (r.SSID.equals(r4_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
                 r4_2.freq = r.frequency;
@@ -221,9 +216,14 @@ public class Trilateration extends AppCompatActivity {
                 r5_5.distance = distance;
                 list.add(r5_5);
             }
+            */
 
-            /*if (r.SSID.equals(Home_1.getName())) {
-                ratio = (double) r.level/ rssi_1m_2g;
+            //2G
+            //distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
+            //5G
+            //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
+            if (r.SSID.equals(Home_1.getName())) {
+                ratio = (double)r.level/Home_1.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_1.freq = r.frequency;
                 Home_1.rssi = r.level;
@@ -231,7 +231,7 @@ public class Trilateration extends AppCompatActivity {
                 list.add(Home_1);
             }
             if (r.SSID.equals(Home_2.getName())) {
-                ratio =(double)  r.level/rssi_1m_2g;
+                ratio =(double)r.level/Home_2.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_2.freq = r.frequency;
                 Home_2.rssi = r.level;
@@ -240,13 +240,13 @@ public class Trilateration extends AppCompatActivity {
 
             }
             if (r.SSID.equals(Home_3.getName())) {
-                ratio =(double)  r.level/rssi_1m_2g;
+                ratio =(double)r.level/Home_3.unitrssi;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_3.freq = r.frequency;
                 Home_3.rssi = r.level;
                 Home_3.distance = distance;
                 list.add(Home_3);
-            }*/
+            }
         }
 
         /* Determine three routers with the shortest distance*/
