@@ -2,19 +2,21 @@ package com.example.sharn.safetui;
 
 public class RouterInfo {
     String name;
-    double latitude;
-    double longitude;
+    public double latitude;
+    public double longitude;
     int rssi;
     double distance;
     int freq;
+    double unitrssi;
 
-    public RouterInfo(String name, int rssi, double distance, int freq) {
+    public RouterInfo(String name, int rssi, double distance, int freq, double unitrssi) {
         this.name = name;
         this.latitude = 0.0;
         this.longitude = 0.0;
         this.rssi = rssi;
         this.distance = distance;
         this.freq = freq;
+        this.unitrssi = unitrssi;
     }
     public String getName(){
         return name;

@@ -32,10 +32,8 @@ public class Trilateration extends AppCompatActivity {
     private TextView txtWifiInfo;
     private Button button;
     String type = "Testing";
-    Double lat = 80085.0;
-    Double lon = 80085.0;
-    double rssi_1m_2g = -39;
-    double rssi_1m_5g = -31;
+    double lat = 80085.0;
+    double lon = 80085.0;
     double ratio;
 
     @Override
@@ -62,18 +60,10 @@ public class Trilateration extends AppCompatActivity {
 
         // AWSMobileClient enables AWS user credentials to access your table
         AWSMobileClient.getInstance().initialize(this).execute();
-
         AWSCredentialsProvider credentialsProvider = AWSMobileClient.getInstance().getCredentialsProvider();
         AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
-
         final AmazonDynamoDBAsyncClient dynamoDBClient = new AmazonDynamoDBAsyncClient(credentialsProvider);
-
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(configuration)
-                .build();
-
-
+        this.dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(dynamoDBClient).awsConfiguration(configuration).build();
     }
 
     public void main(String[] args) {
@@ -81,37 +71,57 @@ public class Trilateration extends AppCompatActivity {
         List<ScanResult> scan = wifi.getScanResults();
         wifi.startScan();
 
-        /**
-         * Temporary router variables to store the closest three routers
-         */
-
+        /*Temporary router variables to store the closest three routers*/
         RouterInfo first, second, third;
-        first = new RouterInfo("first", 0, Double.MAX_VALUE, 0);
-        second = new RouterInfo("first", 0, Double.MAX_VALUE, 0);
-        third = new RouterInfo("first", 0, Double.MAX_VALUE, 0);
+        first = new RouterInfo("first", 0, Double.MAX_VALUE, 0,0);
+        second = new RouterInfo("first", 0, Double.MAX_VALUE, 0,0);
+        third = new RouterInfo("first", 0, Double.MAX_VALUE, 0,0);
 
 
-        /**
-         * Create router instances for both the 2.4G and 5G bands.
-         * Currently only have 5 routers so 5 router instances
-         */
-        RouterInfo r1_2 = new RouterInfo("SafeT_WIFI1", 0, 0, 0);
-        RouterInfo r1_5 = new RouterInfo("SafeT_WIFI1-5G", 0, 0, 0);
+        /*Create router instances for both the 2.4G and 5G bands.
+        Currently only have 5 routers so 5 router instances*/
+        RouterInfo r1_2 = new RouterInfo("SafeT_WIFI1", 0, 0, 0,0);
+        RouterInfo r1_5 = new RouterInfo("SafeT_WIFI1-5G", 0, 0, 0,0);
+        r1_2.setLatitude(38.8275233);
+        r1_2.setLatitude(38.8275233);
+        r1_5.setLongitude(-77.305220);
+        r1_5.setLongitude(-77.305220);
+        r1_2.unitrssi = -40.8;
+        r1_5.unitrssi = -33;
 
-        RouterInfo r2_2 = new RouterInfo("SafeT_WIFI2", 0, 0, 0);
-        RouterInfo r2_5 = new RouterInfo("SafeT_WIFI2-5G", 0, 0, 0);
+        RouterInfo r2_2 = new RouterInfo("SafeT_WIFI2", 0, 0, 0,0);
+        RouterInfo r2_5 = new RouterInfo("SafeT_WIFI2-5G", 0, 0, 0,0);
+        r2_2.setLatitude(38.8275233);
+        r2_2.setLongitude(-77.305220);
+        r2_5.setLatitude(38.8275233);
+        r2_5.setLongitude(-77.305220);
+        r2_2.unitrssi = -38;
+        r2_5.unitrssi = -30.1;
 
-        RouterInfo r3_2 = new RouterInfo("SafeT_WIFI3", 0, 0, 0);
-        RouterInfo r3_5 = new RouterInfo("SafeTWIFI3-5G", 0, 0, 0);
+        RouterInfo r3_2 = new RouterInfo("SafeT_WIFI3", 0, 0, 0,0);
+        RouterInfo r3_5 = new RouterInfo("SafeTWIFI3-5G", 0, 0, 0,0);
+        r3_2.setLatitude(38.827533);
+        r3_2.setLatitude(-77.305705);
+        r3_5.setLatitude(38.827533);
+        r3_5.setLatitude(-77.305705);
+        r3_2.unitrssi = -37.9;
+        r3_5.unitrssi = -30.8;
 
-        RouterInfo r4_2 = new RouterInfo("SafeT_WIFI4", 0, 0, 0);
-        RouterInfo r4_5 = new RouterInfo("SafeT_WIFI4-5g", 0, 0, 0);
 
-        RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0);
-        RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0);
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0);
+
+
+/*
+
+        RouterInfo r4_2 = new RouterInfo("SafeT_WIFI4", 0, 0, 0,0);
+        RouterInfo r4_5 = new RouterInfo("SafeT_WIFI4-5g", 0, 0, 0,0);
+
+
+        RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0,0);
+        RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0,0);
+
+
+        /*RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0);
         RouterInfo Home_2 = new RouterInfo("RDT", 0, 0, 0);
         RouterInfo Home_3 = new RouterInfo("Te'Quaya", 0, 0, 0);
         Home_1.latitude = 38.782220;
@@ -121,60 +131,68 @@ public class Trilateration extends AppCompatActivity {
         Home_2.longitude = -77.523373;
 
         Home_3.latitude = 38.782048;
-        Home_3.longitude = -77.523577;
-       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Home_3.longitude = -77.523577;*/
 
-        /**
-         * Use WiFi Manager to scan the area for all access points.
-         * Filter by "our" routers and add the information to the router instances
-         * NOTE: Need to add the latitude and longitude of the routers after they're placed
-         */
+        /*Use WiFi Manager to scan the area for all access points.
+        Filter by "our" routers and add the information to the router instances
+        NOTE: Need to add the latitude and longitude of the routers after they're placed*/
         ArrayList<RouterInfo> list = new ArrayList<>();
         RouterInfo [] close = new RouterInfo[3];
         double distance = 0;
         for (ScanResult r : scan) {
             if (r.SSID.equals(r1_2.getName())) {
-                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+                ratio = (double) r.level/r1_2.unitrssi;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 r1_2.freq = r.frequency;
                 r1_2.rssi = r.level;
                 r1_2.distance = distance;
                 list.add(r1_2);
-            }
+            }/*
             if (r.SSID.equals(r1_5.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio = (double) r.level/r1_5.unitrssi;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 r1_5.freq = r.frequency;
                 r1_5.rssi = r.level;
                 r1_5.distance = distance;
                 list.add(r1_5);
             }
-            if (r.SSID.equals(r2_2.getName())) {
-                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+           */if (r.SSID.equals(r2_2.getName())) {
+                ratio = (double) r.level/r2_2.unitrssi;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 r2_2.freq = r.frequency;
                 r2_2.rssi = r.level;
                 r2_2.distance = distance;
                 list.add(r2_2);
-            }
+            }/*
             if (r.SSID.equals(r2_5.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio = (double) r.level/r2_5.unitrssi;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 r2_5.freq = r.frequency;
                 r2_5.rssi = r.level;
                 r2_5.distance = distance;
                 list.add(r2_5);
             }
-            if (r.SSID.equals(r3_2.getName())) {
-                distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
+          */ if (r.SSID.equals(r3_2.getName())) {
+                ratio = (double) r.level/r3_2.unitrssi;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 r3_2.freq = r.frequency;
                 r3_2.rssi = r.level;
                 r3_2.distance = distance;
                 list.add(r3_2);
-            }
+            }/*
             if (r.SSID.equals(r3_5.getName())) {
-                distance = (0.070862507 * Math.pow(r.level, 6.235952987)) - 0.207677978;
+                ratio = (double) r.level/r3_5.unitrssi;
+                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 r3_5.freq = r.frequency;
                 r3_5.rssi = r.level;
                 r3_5.distance = distance;
                 list.add(r3_5);
-            }
+            }*/
+
+
+
+
+/*
             if (r.SSID.equals(r4_2.getName())) {
                 distance = (0.647345414 * Math.pow(r.level, 4.6170922718)) - 1.229882689;
                 r4_2.freq = r.frequency;
@@ -204,8 +222,7 @@ public class Trilateration extends AppCompatActivity {
                 list.add(r5_5);
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            if (r.SSID.equals(Home_1.getName())) {
+            /*if (r.SSID.equals(Home_1.getName())) {
                 ratio = (double) r.level/ rssi_1m_2g;
                 distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
                 Home_1.freq = r.frequency;
@@ -229,15 +246,10 @@ public class Trilateration extends AppCompatActivity {
                 Home_3.rssi = r.level;
                 Home_3.distance = distance;
                 list.add(Home_3);
-
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }*/
         }
 
-
-        /**
-         * Determine three routers with the shortest distance
-         */
+        /* Determine three routers with the shortest distance*/
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getDistance() < first.getDistance()) {
                 third = second;
@@ -251,21 +263,18 @@ public class Trilateration extends AppCompatActivity {
             }
         }
 
-
-//assuming elevation = 0
-
+        //assuming elevation = 0
         double earthR = 6371;
         double LatA = first.getLatitude();
         double LonA = first.getLongitude();
-        double DistA = first.getDistance();
+        double DistA = first.getDistance()/1000;
         double LatB = second.getLatitude();
         double LonB = second.getLongitude();
-        double DistB = second.getDistance();
+        double DistB = second.getDistance()/1000;
         double LatC = third.getLatitude();
         double LonC = third.getLongitude();
-        double DistC = third.getDistance();
-
-        /*
+        double DistC = third.getDistance()/1000;
+ /*
         //assuming elevation = 0
         double earthR = 6371;
         double LatA = 38.8275333;
@@ -277,14 +286,14 @@ public class Trilateration extends AppCompatActivity {
         double LatC = 38.827566;
         double LonC = -77.305177;
         double DistC = 0.0050;
+*/
 
-  /*
-    using authalic sphere
-    if using an ellipsoid this step is slightly different
-    Convert geodetic Lat/Long to ECEF xyz
-       1. Convert Lat/Long to radians
-       2. Convert Lat/Long(radians) to ECEF
-    */
+        /*using authalic sphere
+        if using an ellipsoid this step is slightly different
+        Convert geodetic Lat/Long to ECEF xyz
+        1. Convert Lat/Long to radians
+        2. Convert Lat/Long(radians) to ECEF*/
+
         double xA = earthR *(Math.cos(Math.toRadians(LatA)) * Math.cos(Math.toRadians(LonA)));
         double yA = earthR *(Math.cos(Math.toRadians(LatA)) * Math.sin(Math.toRadians(LonA)));
         double zA = earthR *(Math.sin(Math.toRadians(LatA)));
@@ -299,11 +308,11 @@ public class Trilateration extends AppCompatActivity {
         double P1[] = {xA,yA,zA};
         double P2[] = {xB,yB,zB};
         double P3[] = {xC,yC,zC};
-    /*
-    #from wikipedia
-    #transform to get circle 1 at origin
-    #transform to get circle 2 on x axis
-    */
+
+        /* #from wikipedia
+        #transform to get circle 1 at origin
+        #transform to get circle 2 on x axis*/
+
         double diffP2P1[] = {xB-xA,yB-yA,zB-zA};
         double diffP3P1[] = {xC-xA,yC-yA,zC-zA};
         double normdiffP2P1 = norm(diffP2P1);
@@ -336,32 +345,26 @@ public class Trilateration extends AppCompatActivity {
         //convert to degrees
         double lat = Math.toDegrees(asin(triPt[2] / earthR));
         double lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
-        //System.out.println(lat + " \n" + lon);
-
         String s = "Lat: " + lat + "\n" + "Lon: " + lon;
-        //txtWifiInfo.append(s);
         txtWifiInfo.setText(s);
     }
-    public static double dotProduct (double[] a, double[] b)
-    {
+
+    public static double dotProduct (double[] a, double[] b) {
         int n = a.length;
         double sum = 0;
-        for (int i = 0; i < n; i++)
-        {
+        for (int i = 0; i < n; i++) {
             sum += a[i] * b[i];
         }
         return sum;
     }
 
-    static void crossProduct(double vect_A[], double vect_B[],  double cross_P[])
-    {
+    static void crossProduct(double vect_A[], double vect_B[],  double cross_P[]) {
         cross_P[0] = (vect_A[1] * vect_B[2])  - (vect_A[2] * vect_B[1]);
         cross_P[1] = (vect_A[2] * vect_B[0])  - (vect_A[0] * vect_B[2]);
         cross_P[2] = (vect_A[0] * vect_B[1])  - (vect_A[1] * vect_B[0]);
     }
 
-    public static double norm (double[] a)
-    {
+    public static double norm (double[] a) {
         return Math.sqrt((a[0]*a[0])+(a[1]*a[1])+(a[2]*a[2]));
     }
 

@@ -77,12 +77,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
                 "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
         user_name = userPool.getCurrentUser().getUserId();
-
-        mHandler = new Handler();
-        if (type == "Car") {
-            startRepeatingTask();
-        }
-
         //Location
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
@@ -130,54 +124,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             .awsConfiguration(configuration)
             .build();
 
-/*
-        //Collision Checking from Cars
-        if (type == "Car"){
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    ScanRequest scan1 = new ScanRequest().withTableName("SafeT_Table3");
-                    ScanResult result = dynamoDBClient.scan(scan1);
+        /*mHandler = new Handler();
+        if (type == "Car") {
+            startRepeatingTask();
+        }*/
 
-                    for(Map<String, AttributeValue> item :result.getItems()){
-                        //Get Lat
-                        Object oLat = item.get("Latitude").getN();
-                        String sLat = (String) oLat;
-                        double dLat = Double.parseDouble(sLat);
-
-                        //Get Lon
-                        Object oLon = item.get("Longitude").getN();
-                        String sLon = (String) oLon;
-                        double dLon = Double.parseDouble(sLon);
-
-                        //Get ID
-                        Object oId = item.get("userId").getS();
-                        String sId = (String) oId;
-
-                        //Get Type
-                        Object oType = item.get("Type").getS();
-                        String sType = (String) oType;
-
-                        //Collision Checks
-                        if (!sId.equals(user_name)){
-                            if (sType.equals("Ped") || sType.equals("Bike")) {
-                                if (dLat >= lat - 1 && dLat <= lat + 1) {
-                                    if (dLon >= lon - 1 && dLon <= lon + 1) {
-                                        count++;
-                                        //AlertDialogPop();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            Thread mythread = new Thread(runnable);
-            mythread.start();
-        }
-        */
-
-
-        //Toggle Button
+//////////Toggle Button
         safeTButton = getView().findViewById(R.id.toggleButton2);
         safeTButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -185,14 +137,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 checkPermission();
                 //Active
                 if (permissionGiven == true) {
-                    type = "Ped";
+                    type = "Car";
                     locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
-
-                    //timestamp = System.currentTimeMillis()/1000;
-                    //SaveLocation(lat, lon, type, user_name, timestamp);
-
-                    /////Alert Dialog
-                    //openDialog();
+                    timestamp = System.currentTimeMillis()/1000;
+                    SaveLocation(lat, lon, type, user_name, timestamp);
                 }
                 //Inactive
             } else {
@@ -206,8 +154,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         });
         mHandler = new Handler();
         startRepeatingTask();
-
-
     }//End OnCreate
 
 
@@ -251,10 +197,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         //Collision Checks
                         if (!sId.equals(user_name)) {
                             if (sType.equals("Ped") || sType.equals("Bike")) {
-                                if (dLat >= lat - 1 && dLat <= lat + 1) {
-                                    if (dLon >= lon - 1 && dLon <= lon + 1) {
-                                        count++;
-                                            openDialog();
+                                if (dLat >= lat - .0001 && dLat <= lat + .0001) {
+                                    if (dLon >= lon - .0001 && dLon <= lon + .0001) {
+                                        //count++;
+                                        openDialog();
                                     }
                                 }
                             }
@@ -266,7 +212,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             mythread.start();
         }
     }
-
 
     //Timed Collision Checks
     @Override
@@ -295,10 +240,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void openDialog(){
         //AlertDialog alertDialog = builder.create();
         CollideDialog collideDialog = new CollideDialog();
-
-        if (collideDialog.getShowsDialog()){
-            return;
-        }
+        //if (collideDialog.getShowsDialog()){
+        //    return;
+        //}
         collideDialog.show(getFragmentManager(), "wut");
     }
 
@@ -353,17 +297,4 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
         }).start();
     }
-
-    /*public void AlertDialogPop(){
-        AlertDialog alertDialog = new AlertDialog.Builder(this.getContext()).create();
-        alertDialog.setTitle("Alert");
-        alertDialog.setMessage("Alert message to be shown");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
-        }*/
 }
