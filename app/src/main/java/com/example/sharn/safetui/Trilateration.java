@@ -3,6 +3,7 @@ package com.example.sharn.safetui;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +29,6 @@ import java.util.*;
 import static java.lang.Math.asin;
 
 public class Trilateration extends AppCompatActivity {
-
     DynamoDBMapper dynamoDBMapper;
     private TextView txtWifiInfo;
     private Button button;
@@ -35,6 +36,13 @@ public class Trilateration extends AppCompatActivity {
     double lat = 80085.0;
     double lon = 80085.0;
     double ratio;
+    int count = 0;
+    String Count;
+    String user_name;
+    long timestamp;
+
+    int mInterval = 3000; // 5 seconds by default, can be changed later
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,21 +50,11 @@ public class Trilateration extends AppCompatActivity {
         setContentView(R.layout.activity_trilateration);
 
         txtWifiInfo = findViewById(R.id.idTxt);
-
         //Get username
         CognitoUserPool userPool = new CognitoUserPool(this,
                 "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
                 "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
-        final String user_name = userPool.getCurrentUser().getUserId();
-
-        button = findViewById(R.id.button3);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                main(new String []{"arg1", "arg2", "arg3"});
-                SaveLocation(lat, lon, type, user_name);
-            }
-        });
+        user_name = userPool.getCurrentUser().getUserId();
 
         // AWSMobileClient enables AWS user credentials to access your table
         AWSMobileClient.getInstance().initialize(this).execute();
@@ -64,9 +62,25 @@ public class Trilateration extends AppCompatActivity {
         AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
         final AmazonDynamoDBAsyncClient dynamoDBClient = new AmazonDynamoDBAsyncClient(credentialsProvider);
         this.dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(dynamoDBClient).awsConfiguration(configuration).build();
+
+        //Run on button press
+        button = findViewById(R.id.button3);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                timestamp = System.currentTimeMillis()/1000;
+                trilat(new String[]{"arg1", "arg2", "arg3"});
+                SaveLocation(lat, lon, type, user_name, timestamp);
+            }
+        });
+
+        mHandler = new Handler();
+        startRepeatingTask();
+
+
     }
 
-    public void main(String[] args) {
+    public void trilat(String[] args) {
         WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         List<ScanResult> scan = wifi.getScanResults();
         wifi.startScan();
@@ -84,8 +98,8 @@ public class Trilateration extends AppCompatActivity {
         RouterInfo r1_2 = new RouterInfo("SafeT_WIFI1", 0, 0, 0,0);
         RouterInfo r1_5 = new RouterInfo("SafeT_WIFI1-5G", 0, 0, 0,0);
         r1_2.setLatitude(38.8275233);
-        r1_2.setLatitude(38.8275233);
-        r1_5.setLongitude(-77.305220);
+        r1_2.setLongitude(-77.305220);
+        r1_5.setLatitude(38.8275233);
         r1_5.setLongitude(-77.305220);
         r1_2.unitrssi = -40.8;
         r1_5.unitrssi = -33;
@@ -107,30 +121,25 @@ public class Trilateration extends AppCompatActivity {
         r3_5.setLatitude(-77.305705);
         r3_2.unitrssi = -37.9;
         r3_5.unitrssi = -30.8;
-
-
-
         RouterInfo r4_2 = new RouterInfo("SafeT_WIFI4", 0, 0, 0,0);
         RouterInfo r4_5 = new RouterInfo("SafeT_WIFI4-5g", 0, 0, 0,0);
-
-
         RouterInfo r5_2 = new RouterInfo("SafeT_WIFI5", 0, 0, 0,0);
         RouterInfo r5_5 = new RouterInfo("SafeT_WIFI5-5G", 0, 0, 0,0);
         */
 
+    //lat/lon from gps app on huawei
         RouterInfo Home_1 = new RouterInfo("KenYo", 0, 0, 0,0);
-        Home_1.setLatitude(38.782188);
-        Home_1.setLongitude(-77.523479);
+        Home_1.setLatitude(38.782092);//(38.782188);
+        Home_1.setLongitude(-77.523436);//(-77.523479);
         Home_1.unitrssi = -31;///// 5G?????
         RouterInfo Home_2 = new RouterInfo("SafeT_WIFI2", 0, 0, 0,0);
-        Home_2.setLatitude(38.782222);
-        Home_2.setLongitude(-77.523524);
+        Home_2.setLatitude(38.782162);//(38.782222);
+        Home_2.setLongitude(-77.523511);//(-77.523524);
         Home_2.unitrssi = -38;
         RouterInfo Home_3 = new RouterInfo("SafeT_WIFI3", 0, 0, 0,0);
-        Home_3.setLatitude(38.782237);
-        Home_3.setLongitude(-77.5236030);
+        Home_3.setLatitude(38.782262);//(38.782237);
+        Home_3.setLongitude(-77.523469);//(-77.523603);
         Home_3.unitrssi = -37.9;
-
 
         /*Use WiFi Manager to scan the area for all access points.
         Filter by "our" routers and add the information to the router instances
@@ -142,7 +151,7 @@ public class Trilateration extends AppCompatActivity {
             /*
             if (r.SSID.equals(r1_2.getName())) {
                 ratio = (double) r.level/r1_2.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
                 r1_2.freq = r.frequency;
                 r1_2.rssi = r.level;
                 r1_2.distance = distance;
@@ -158,7 +167,7 @@ public class Trilateration extends AppCompatActivity {
             }
            if (r.SSID.equals(r2_2.getName())) {
                 ratio = (double) r.level/r2_2.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
                 r2_2.freq = r.frequency;
                 r2_2.rssi = r.level;
                 r2_2.distance = distance;
@@ -174,7 +183,7 @@ public class Trilateration extends AppCompatActivity {
             }
              if (r.SSID.equals(r3_2.getName())) {
                 ratio = (double) r.level/r3_2.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
                 r3_2.freq = r.frequency;
                 r3_2.rssi = r.level;
                 r3_2.distance = distance;
@@ -223,25 +232,27 @@ public class Trilateration extends AppCompatActivity {
             //5G
             //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
             if (r.SSID.equals(Home_1.getName())) {
-                ratio = (double)r.level/Home_1.unitrssi;
-                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
-                Home_1.freq = r.frequency;
-                Home_1.rssi = r.level;
-                Home_1.distance = distance;
-                list.add(Home_1);
+                if (r.frequency < 4000) {////////checks that is 2G
+                    ratio = (double) r.level / Home_1.unitrssi;
+                    distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689; //2G
+                    //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;  //5G
+                    Home_1.freq = r.frequency;
+                    Home_1.rssi = r.level;
+                    Home_1.distance = distance;
+                    list.add(Home_1);
+                }
             }
             if (r.SSID.equals(Home_2.getName())) {
                 ratio =(double)r.level/Home_2.unitrssi;
-                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
                 Home_2.freq = r.frequency;
                 Home_2.rssi = r.level;
                 Home_2.distance = distance;
                 list.add(Home_2);
-
             }
             if (r.SSID.equals(Home_3.getName())) {
                 ratio =(double)r.level/Home_3.unitrssi;
-                distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
+                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
                 Home_3.freq = r.frequency;
                 Home_3.rssi = r.level;
                 Home_3.distance = distance;
@@ -250,16 +261,21 @@ public class Trilateration extends AppCompatActivity {
         }
 
         /* Determine three routers with the shortest distance*/
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getDistance() < first.getDistance()) {
-                third = second;
-                second = first;
-                first = list.get(i);
-            } else if (list.get(i).getDistance() < second.getDistance()) {
-                third = second;
-                second = list.get(i);
-            } else if (list.get(i).getDistance() < third.getDistance()) {
-                third = list.get(i);
+        if (list.size() <= 2) {
+            return;
+        }
+        else{
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).getDistance() < first.getDistance()) {
+                    third = second;
+                    second = first;
+                    first = list.get(i);
+                } else if (list.get(i).getDistance() < second.getDistance()) {
+                    third = second;
+                    second = list.get(i);
+                } else if (list.get(i).getDistance() < third.getDistance()) {
+                    third = list.get(i);
+                }
             }
         }
 
@@ -343,10 +359,40 @@ public class Trilateration extends AppCompatActivity {
                 P1[2] + x*ex[2] + y*ey[2] + z*ez[2]};
         //convert back to lat/long from ECEF
         //convert to degrees
-        double lat = Math.toDegrees(asin(triPt[2] / earthR));
-        double lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
-        String s = "Lat: " + lat + "\n" + "Lon: " + lon;
+        lat = Math.toDegrees(asin(triPt[2] / earthR));
+        lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
+
+        DecimalFormat numberFormat = new DecimalFormat("#.000000");
+        String s = "Lat: " + numberFormat.format(lat) + "\n" + "Lon: " + numberFormat.format(lon);
         txtWifiInfo.setText(s);
+    }
+
+    //Timed Collision Checks
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopRepeatingTask();
+    }
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                runTrilat();
+            } finally {
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask(){mStatusChecker.run();}
+    void stopRepeatingTask(){mHandler.removeCallbacks(mStatusChecker);}
+
+    public void runTrilat(){
+        //count++;
+        //Count = Integer.toString(count);
+        trilat(new String []{"arg1", "arg2", "arg3"});
+        timestamp = System.currentTimeMillis()/1000;
+        SaveLocation(lat,lon,Count,user_name,timestamp);
     }
 
     public static double dotProduct (double[] a, double[] b) {
@@ -364,16 +410,15 @@ public class Trilateration extends AppCompatActivity {
         cross_P[2] = (vect_A[0] * vect_B[1])  - (vect_A[1] * vect_B[0]);
     }
 
-    public static double norm (double[] a) {
-        return Math.sqrt((a[0]*a[0])+(a[1]*a[1])+(a[2]*a[2]));
-    }
+    public static double norm (double[] a) {return Math.sqrt((a[0]*a[0])+(a[1]*a[1])+(a[2]*a[2]));}
 
-    public void SaveLocation(Double lat, Double lon, String typeIn, String userName) {
+    public void SaveLocation(Double lat, Double lon, String typeIn, String userName, long TS) {
         final Test newItem = new Test();
         newItem.setUserId(userName);
         newItem.setType(typeIn);
         newItem.setLatitude(lat);
         newItem.setLongitude(lon);
+        newItem.setTimeStamp(TS);
 
         new Thread(new Runnable() {
             @Override

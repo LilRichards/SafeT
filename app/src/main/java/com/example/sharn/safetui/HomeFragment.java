@@ -44,20 +44,16 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private LocationManager locationManager;
     private boolean permissionGiven = false;
     DynamoDBMapper dynamoDBMapper;
-
     String type = "Inactive";
     double lat = 0;
     double lon = 0;
-    int count = 0;//for loop testing
+    int count = 0;
     String user_name;
-
     int mInterval = 3000; // 5 seconds by default, can be changed later
     private Handler mHandler;
     long timestamp;
 
-
-    public HomeFragment() {
-    }
+    public HomeFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -73,9 +69,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
 
         //Get username
-        CognitoUserPool userPool = new CognitoUserPool(this.getContext(),
-                "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
-                "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
+        CognitoUserPool userPool = new CognitoUserPool(this.getContext(), "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4", "14djt0hg74nfgeeh01u2ip4tv0c95fq7knof5p56rjon4ma50vtf");
         user_name = userPool.getCurrentUser().getUserId();
         //Location
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
@@ -86,9 +80,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 lat = location.getLatitude();
                 lon = location.getLongitude();
                 timestamp = System.currentTimeMillis()/1000;
-
                 SaveLocation(lat, lon, type, user_name, timestamp);
-
+                //update map
                 map.clear();
                 LatLng current = new LatLng(lat, lon);
                 MarkerOptions option = new MarkerOptions();
@@ -97,16 +90,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 map.moveCamera(CameraUpdateFactory.newLatLng(current));
             }
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
+            @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
 
-            @Override
-            public void onProviderEnabled(String provider) {
-            }
+            @Override public void onProviderEnabled(String provider) {}
 
-            @Override
-            public void onProviderDisabled(String provider) {
+            @Override public void onProviderDisabled(String provider) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
             }
@@ -119,30 +107,21 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         // Add code to instantiate a AmazonDynamoDBClient
         final AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
         //Create DB Mapper
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-            .dynamoDBClient(dynamoDBClient)
-            .awsConfiguration(configuration)
-            .build();
-
-        /*mHandler = new Handler();
-        if (type == "Car") {
-            startRepeatingTask();
-        }*/
+        this.dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(dynamoDBClient).awsConfiguration(configuration).build();
 
 //////////Toggle Button
         safeTButton = getView().findViewById(R.id.toggleButton2);
         safeTButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+            //Active
             if (safeTButton.isChecked()) {
                 checkPermission();
-                //Active
-                if (permissionGiven == true) {
-                    type = "Car";
+                if (permissionGiven) { //permissionGiven == true) {
                     locationManager.requestLocationUpdates("gps", 2000, 3, locationListener);
-                    timestamp = System.currentTimeMillis()/1000;
+                    timestamp = System.currentTimeMillis() / 1000;
                     SaveLocation(lat, lon, type, user_name, timestamp);
                 }
-                //Inactive
+            //Inactive
             } else {
                 locationManager.removeUpdates(locationListener);
                 type = "Inactive";
@@ -152,10 +131,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+        //Start collision check
         mHandler = new Handler();
         startRepeatingTask();
-    }//End OnCreate
-
+    }
 
     public void collisionCheck(){
         if (type == "Car") {
@@ -165,10 +144,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             // Add code to instantiate a AmazonDynamoDBClient
             final AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
             //Create DB Mapper
-            this.dynamoDBMapper = DynamoDBMapper.builder()
-                    .dynamoDBClient(dynamoDBClient)
-                    .awsConfiguration(configuration)
-                    .build();
+            this.dynamoDBMapper = DynamoDBMapper.builder().dynamoDBClient(dynamoDBClient).awsConfiguration(configuration).build();
 
             Runnable runnable = new Runnable() {
                 public void run() {
@@ -222,27 +198,18 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
-            try {
-                collisionCheck();
-            } finally {
-                mHandler.postDelayed(mStatusChecker, mInterval);
+            try { collisionCheck();
+            } finally { mHandler.postDelayed(mStatusChecker, mInterval);
             }
         }
     };
-    void startRepeatingTask() {
-        mStatusChecker.run();
-    }
-    void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
-    }
+    void startRepeatingTask() { mStatusChecker.run(); }
+    void stopRepeatingTask() { mHandler.removeCallbacks(mStatusChecker); }
 
     ////Alert Dialog
     public void openDialog(){
         //AlertDialog alertDialog = builder.create();
         CollideDialog collideDialog = new CollideDialog();
-        //if (collideDialog.getShowsDialog()){
-        //    return;
-        //}
         collideDialog.show(getFragmentManager(), "wut");
     }
 
@@ -276,9 +243,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 10:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permissionGiven = true;
-                }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { permissionGiven = true; }
         }
     }
 
