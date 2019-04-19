@@ -18,6 +18,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -64,6 +68,16 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     long timestamp;
     double ratio;
 
+
+    private RadioGroup radioGroup;
+    private RadioButton radioButton;
+
+    private RadioButton radioCar;
+    private RadioButton radioBike;
+    private RadioButton radioPed;
+
+
+
     public HomeFragment() {
     }
 
@@ -101,7 +115,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 lat = location.getLatitude();
                 lon = location.getLongitude();
                 timestamp = System.currentTimeMillis()/1000;
-                SaveLocation(lat, lon, "GPS", user_name, timestamp);
+                SaveLocation(lat, lon, type, user_name, timestamp);
                 mapUpdate();
             }
 
@@ -116,22 +130,58 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
         };
 
-//////////Toggle Button
+
+        radioGroup = getView().findViewById(R.id.radioGroup1);
         safeTButton = getView().findViewById(R.id.toggleButton2);
+        radioCar = getView().findViewById(R.id.radio_car);
+        radioBike = getView().findViewById(R.id.radio_bike);
+        radioPed = getView().findViewById(R.id.radio_ped);
+
+        //Toggle Button
         safeTButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //Active
                 if (safeTButton.isChecked()) {
-                    //Start Trilat/collisionCheck
+                    //Radio Buttons: set Type
+                    int selectedId = radioGroup.getCheckedRadioButtonId();
+                    radioButton = getView().findViewById(selectedId);
+                    if(selectedId == -1) {//RB must be selected to activate
+                        Toast.makeText(getContext(), "Select travel method.", Toast.LENGTH_SHORT).show();
+                        safeTButton.setChecked(false);
+                        return;
+                    }else if (radioButton.getId() == R.id.radio_car){
+                        type = "Car";
+                        radioCar.setEnabled(false);
+                        radioBike.setEnabled(false);
+                        radioPed.setEnabled(false);
+                    } else if (radioButton.getId() == R.id.radio_ped){
+                        type = "Ped";
+                        radioCar.setEnabled(false);
+                        radioBike.setEnabled(false);
+                        radioPed.setEnabled(false);
+                    } else if (radioButton.getId() == R.id.radio_bike){
+                        type = "Bike";
+                        radioCar.setEnabled(false);
+                        radioBike.setEnabled(false);
+                        radioPed.setEnabled(false);
+                    }
+                    //Start Tracking/collisionCheck
                     mHandler = new Handler();
                     startRepeatingTask();
                     checkPermission();
-                    //Inactive
+                //Inactive
                 } else {
-                    locationManager.removeUpdates(locationListener);
-                    stopRepeatingTask();
+                    radioGroup.clearCheck();
+                    radioCar.setEnabled(true);
+                    radioBike.setEnabled(true);
+                    radioPed.setEnabled(true);
+
                     timestamp = System.currentTimeMillis() / 1000;
                     SaveLocation(0.0, 0.0, "Inactive", user_name, timestamp);
+
+                    stopRepeatingTask();
+
+                    locationManager.removeUpdates(locationListener);
                     map.clear();
                 }
             }
@@ -173,9 +223,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         //Collision Checks
                         if (!sId.equals(user_name)) {
                             if (sType.equals("Ped") || sType.equals("Bike")) {
-                                if (dLat >= lat - .0001 && dLat <= lat + .0001) {
-                                    if (dLon >= lon - .0001 && dLon <= lon + .0001) {
-                                        //count++;
+                                if (dLat >= lat - .001 && dLat <= lat + .001) {
+                                    if (dLon >= lon - .001 && dLon <= lon + .001) {
                                         openDialog();
                                     }
                                 }
@@ -201,7 +250,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         public void run() {
             try {
                 runTrilat();
-                //collisionCheck();
+                collisionCheck();
             } finally {
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }
@@ -563,7 +612,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         lon = Math.toDegrees(Math.atan2(triPt[1], triPt[0]));
         mapUpdate();
         timestamp = System.currentTimeMillis()/1000;
-        SaveLocation(lat, lon,"Trilat", user_name, timestamp);
+        SaveLocation(lat, lon,type, user_name, timestamp);
     }
 
     public void mapUpdate(){

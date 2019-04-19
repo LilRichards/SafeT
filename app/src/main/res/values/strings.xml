@@ -15,11 +15,13 @@
     <string name="alert_dialog">Alert Dialog</string>
     <string name="alert_dialog_builder">Alert Dialog with Builder and custom background</string>
 
-    <!-- Dialog -->
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="welcome_simple_dialog">Welcome, \nThis is simple dialog, using Alert Dialog feature</string>
     <string name="welcome_simple_dialog_builder">Welcome, \nThis is simple dialog builder, using Alert Dialog feature and custom background</string>
+
+
+
 
 </resources>
 
