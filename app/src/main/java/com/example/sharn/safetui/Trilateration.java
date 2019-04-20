@@ -20,10 +20,12 @@ import java.util.List;
 
 
 import static java.lang.Math.asin;
+import static java.lang.Math.exp;
 
 public class Trilateration extends AppCompatActivity {
     DynamoDBMapper dynamoDBMapper;
     private TextView txtWifiInfo;
+    private TextView txtDistInfo;
     private Button button;
     String type = "Testing";
     double lat = 80085.0;
@@ -43,6 +45,7 @@ public class Trilateration extends AppCompatActivity {
         setContentView(R.layout.activity_trilateration);
 
         txtWifiInfo = findViewById(R.id.idTxt);
+        txtDistInfo = findViewById(R.id.idTxt2);
         //Get username
         CognitoUserPool userPool = new CognitoUserPool(this,
                 "us-east-1_qvE8gB6Yl", "5mbji71cnmk4j961tvku6b77h4",
@@ -227,8 +230,8 @@ public class Trilateration extends AppCompatActivity {
             if (r.SSID.equals(Home_1.getName())) {
                 if (r.frequency < 4000) {////////checks that is 2G
                     ratio = (double) r.level / Home_1.unitrssi;
-                    distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689; //2G
-                    //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;  //5G
+                    distance = .0026*exp(-.159*r.level);
+                    //distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) ;//- 1.229882689; //2G
                     Home_1.freq = r.frequency;
                     Home_1.rssi = r.level;
                     Home_1.distance = distance;
@@ -237,7 +240,8 @@ public class Trilateration extends AppCompatActivity {
             }
             if (r.SSID.equals(Home_2.getName())) {
                 ratio =(double)r.level/Home_2.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
+                distance = .0026*exp(-.159*r.level);
+                //distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 Home_2.freq = r.frequency;
                 Home_2.rssi = r.level;
                 Home_2.distance = distance;
@@ -245,7 +249,8 @@ public class Trilateration extends AppCompatActivity {
             }
             if (r.SSID.equals(Home_3.getName())) {
                 ratio =(double)r.level/Home_3.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
+                distance = .0026*exp(-.159*r.level);
+                //distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
                 Home_3.freq = r.frequency;
                 Home_3.rssi = r.level;
                 Home_3.distance = distance;
@@ -356,7 +361,14 @@ public class Trilateration extends AppCompatActivity {
         lon = Math.toDegrees(Math.atan2(triPt[1],triPt[0]));
 
         DecimalFormat numberFormat = new DecimalFormat("#.000000");
-        String s = "Lat: " + numberFormat.format(lat) + "\n" + "Lon: " + numberFormat.format(lon);
+        String s = "Lat:   " + numberFormat.format(lat) + "\n" + "Lon: " + numberFormat.format(lon);
+
+        DecimalFormat numberFormat2 = new DecimalFormat("#.000");
+        String dist =   first.name +  " Dist: " + numberFormat2.format(DistA*1000) + "m   RSSI:" + first.rssi + "\n" +
+                        second.name + " Dist: " + numberFormat2.format(DistB*1000) + "m   RSSI:" + second.rssi + "\n" +
+                        third.name +  " Dist: " + numberFormat2.format(DistC*1000) + "m   RSSI:" + third.rssi + "\n" ;
+
+        txtDistInfo.setText(dist);
         txtWifiInfo.setText(s);
     }
 

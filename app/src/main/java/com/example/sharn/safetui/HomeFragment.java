@@ -606,15 +606,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         timestamp = System.currentTimeMillis()/1000;
         SaveLocation(lat, lon,type, user_name, timestamp);
     }
-//add int flg, pass though 1 trilat 2 gps
-    //if else for markeroptions update
 
     public void mapUpdate(boolean GPS_Trilat){
         map.clear();
         LatLng current = new LatLng(lat, lon);
         MarkerOptions option = new MarkerOptions();
         option.position(current);
-
+        //if trilat: orange, if gps: blue
         if(GPS_Trilat) {
             option.icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_orange_16));
         }else{
