@@ -1,8 +1,6 @@
 package com.example.sharn.safetui;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -18,12 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.config.AWSConfiguration;
@@ -37,17 +33,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.Map;
 import static android.content.Context.LOCATION_SERVICE;
 import static android.content.Context.WIFI_SERVICE;
 import static java.lang.Math.asin;
-
-
 import android.net.wifi.WifiManager;
-import android.widget.TextView;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,16 +61,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private Handler mHandler;
     long timestamp;
     double ratio;
-
-
     private RadioGroup radioGroup;
     private RadioButton radioButton;
-
     private RadioButton radioCar;
     private RadioButton radioBike;
     private RadioButton radioPed;
-
-
 
     public HomeFragment() {
     }
@@ -116,7 +105,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 lon = location.getLongitude();
                 timestamp = System.currentTimeMillis()/1000;
                 SaveLocation(lat, lon, type, user_name, timestamp);
-                mapUpdate();
+                mapUpdate(false);
             }
 
             @Override
@@ -145,7 +134,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     //Radio Buttons: set Type
                     int selectedId = radioGroup.getCheckedRadioButtonId();
                     radioButton = getView().findViewById(selectedId);
-                    if(selectedId == -1) {//RB must be selected to activate
+                    //RB must be selected to activate
+                    if(selectedId == -1) {
                         Toast.makeText(getContext(), "Select travel method.", Toast.LENGTH_SHORT).show();
                         safeTButton.setChecked(false);
                         return;
@@ -223,8 +213,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         //Collision Checks
                         if (!sId.equals(user_name)) {
                             if (sType.equals("Ped") || sType.equals("Bike")) {
-                                if (dLat >= lat - .001 && dLat <= lat + .001) {
-                                    if (dLon >= lon - .001 && dLon <= lon + .001) {
+                                if (dLat >= lat - .0005 && dLat <= lat + .0005) {
+                                    if (dLon >= lon - .0005 && dLon <= lon + .0005) {
                                         openDialog();
                                     }
                                 }
@@ -276,7 +266,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         map = googleMap;
         LatLng me = new LatLng(38.781395, -77.523965);
         map.moveCamera(CameraUpdateFactory.newLatLng(me));
-        map.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
+        map.animateCamera(CameraUpdateFactory.zoomTo(20.0f));//13
     }
 
     //run in debug to get permission????????Sometimes, IDK...
@@ -317,7 +307,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         }).start();
     }
 
-    public void trilat(String[] args) {//getcontext????
+    public void trilat(String[] args) {
         WifiManager wifi = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
         List<android.net.wifi.ScanResult> scan = wifi.getScanResults();
         wifi.startScan();
@@ -327,7 +317,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         first = new RouterInfo("first", 0, Double.MAX_VALUE, 0, 0);
         second = new RouterInfo("first", 0, Double.MAX_VALUE, 0, 0);
         third = new RouterInfo("first", 0, Double.MAX_VALUE, 0, 0);
-
 
         /*Create router instances for both the 2.4G and 5G bands.
         Currently only have 5 routers so 5 router instances*/
@@ -473,32 +462,35 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             //distance = (0.647345414 * Math.pow(ratio, 4.6170922718));// - 1.229882689;
             //5G
             //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;
-            if (r.SSID.equals(Home_1.getName())) {
-                if (r.frequency < 4000) {////////checks that is 2G
-                    ratio = (double) r.level / Home_1.unitrssi;
-                    distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689; //2G
-                    //distance = (0.070862507 * Math.pow(ratio, 6.235952987)) - 0.207677978;  //5G
-                    Home_1.freq = r.frequency;
-                    Home_1.rssi = r.level;
-                    Home_1.distance = distance;
-                    list.add(Home_1);
+
+            if (r.level > -70) { //cut out really weak signals
+                if (r.frequency < 4000) { //use only 2G
+
+                    if (r.SSID.equals(Home_1.getName())) {
+                        ratio = (double) r.level / Home_1.unitrssi;
+                        distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689; //2G
+                        Home_1.freq = r.frequency;
+                        Home_1.rssi = r.level;
+                        Home_1.distance = distance;
+                        list.add(Home_1);
+                    }
+                    if (r.SSID.equals(Home_2.getName())) {
+                        ratio = (double) r.level / Home_2.unitrssi;
+                        distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
+                        Home_2.freq = r.frequency;
+                        Home_2.rssi = r.level;
+                        Home_2.distance = distance;
+                        list.add(Home_2);
+                    }
+                    if (r.SSID.equals(Home_3.getName())) {
+                        ratio = (double) r.level / Home_3.unitrssi;
+                        distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
+                        Home_3.freq = r.frequency;
+                        Home_3.rssi = r.level;
+                        Home_3.distance = distance;
+                        list.add(Home_3);
+                    }
                 }
-            }
-            if (r.SSID.equals(Home_2.getName())) {
-                ratio = (double) r.level / Home_2.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
-                Home_2.freq = r.frequency;
-                Home_2.rssi = r.level;
-                Home_2.distance = distance;
-                list.add(Home_2);
-            }
-            if (r.SSID.equals(Home_3.getName())) {
-                ratio = (double) r.level / Home_3.unitrssi;
-                distance = (0.647345414 * Math.pow(ratio, 4.6170922718)) - 1.229882689;
-                Home_3.freq = r.frequency;
-                Home_3.rssi = r.level;
-                Home_3.distance = distance;
-                list.add(Home_3);
             }
         }
 
@@ -610,17 +602,24 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         //convert to degrees
         lat = Math.toDegrees(asin(triPt[2] / earthR));
         lon = Math.toDegrees(Math.atan2(triPt[1], triPt[0]));
-        mapUpdate();
+        mapUpdate(true);
         timestamp = System.currentTimeMillis()/1000;
         SaveLocation(lat, lon,type, user_name, timestamp);
     }
+//add int flg, pass though 1 trilat 2 gps
+    //if else for markeroptions update
 
-    public void mapUpdate(){
-        //update map
+    public void mapUpdate(boolean GPS_Trilat){
         map.clear();
         LatLng current = new LatLng(lat, lon);
         MarkerOptions option = new MarkerOptions();
         option.position(current);
+
+        if(GPS_Trilat) {
+            option.icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_orange_16));
+        }else{
+            option.icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_blue_16));
+        }
         map.addMarker(option);
         map.moveCamera(CameraUpdateFactory.newLatLng(current));
     }
